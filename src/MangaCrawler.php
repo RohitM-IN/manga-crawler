@@ -15,7 +15,6 @@ class MangaCrawler
      * @return array
      * @throws \Exception
      */
-
     public function getMangaList()
     {
         return 'test';

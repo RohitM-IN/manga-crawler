@@ -2,9 +2,9 @@
 
 namespace RohitMIN\MangaCrawler;
 
+use RohitMIN\MangaCrawler\Commands\MangaCrawlerCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
-use RohitMIN\MangaCrawler\Commands\MangaCrawlerCommand;
 
 class MangaCrawlerServiceProvider extends PackageServiceProvider
 {
