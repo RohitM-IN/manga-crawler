@@ -1,12 +1,12 @@
 <?php
 
-namespace VendorName\Skeleton\Commands;
+namespace RohitMIN\MangaCrawler\Commands;
 
 use Illuminate\Console\Command;
 
-class SkeletonCommand extends Command
+class MangaCrawlerCommand extends Command
 {
-    public $signature = 'skeleton';
+    public $signature = 'manga-crawler';
 
     public $description = 'My command';
 
