@@ -21,11 +21,10 @@ class Crawler extends Model
         'worker',
         'url',
         'active',
-        'data'
+        'data',
     ];
 
     protected $casts = [
-        'active' => 'boolean'
+        'active' => 'boolean',
     ];
-
 }

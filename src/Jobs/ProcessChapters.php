@@ -2,7 +2,6 @@
 
 namespace RohitMIN\MangaCrawler\Jobs;
 
-use Faker\Core\File;
 use Illuminate\Bus\Batchable;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -13,16 +12,21 @@ use Illuminate\Support\Facades\Storage;
 
 class ProcessChapters implements ShouldQueue
 {
-    use Batchable, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Batchable;
+    use Dispatchable;
+    use InteractsWithQueue;
+    use Queueable;
+    use SerializesModels;
 
-    private $worker, $url;
+    private $worker;
+    private $url;
 
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct($worker,$url)
+    public function __construct($worker, $url)
     {
         $this->onQueue('chapters');
         $this->worker = $worker;
@@ -40,14 +44,14 @@ class ProcessChapters implements ShouldQueue
 
         $details = $this->worker->mangaDetails;
 
-        $chapter = $details['chapters']->where('url',$this->url)->first();
+        $chapter = $details['chapters']->where('url', $this->url)->first();
 
-        $path = str_replace(" ", '_' ,$details['title']) . "/" . $chapter['name'] . "/";
+        $path = str_replace(" ", '_', $details['title']) . "/" . $chapter['name'] . "/";
 
         Storage::deleteDirectory(storage_path('tmp/' . $path));
         $images = [];
 
-        foreach($data as $url){
+        foreach ($data as $url) {
             $contents = file_get_contents($url);
             $name = $path . basename($url);
 
@@ -55,7 +59,6 @@ class ProcessChapters implements ShouldQueue
             $images[] = $name;
         }
 
-        $process = new $this->worker->chapterListner($details,$chapter,$images);
-
+        $process = new $this->worker->chapterListner($details, $chapter, $images);
     }
 }

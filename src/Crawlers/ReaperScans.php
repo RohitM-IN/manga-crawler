@@ -16,32 +16,35 @@ use Symfony\Component\DomCrawler\Crawler;
 
 class ReaperScans implements CrawlerInterface
 {
-    private $url,$homepage,$perPage;
+    private $url;
+    private $homepage;
+    private $perPage;
 
-    public $mangaDetails = array(),$chapterListner;
+    public $mangaDetails = [];
+    public $chapterListner;
 
     public function __construct(MangaCrawler $crawler)
     {
         $this->homepage = "https://reaperscans.com/";
         $this->url = "https://reaperscans.com/wp-admin/admin-ajax.php";
         $this->chapterListner = $crawler->getchapterListner();
-        $this->perPage = config('mangacrawler.reaperscans.perPage',30);
+        $this->perPage = config('mangacrawler.reaperscans.perPage', 30);
     }
 
     public function getMangaList(): Collection
     {
-        $list = array();
+        $list = [];
         $count = 0;
         while (true) {
             $response = $this->httpClient()->withHeaders($this->getHeader())
-            ->withBody($this->getContent($count,$this->perPage),'raw')->post($this->url);
+            ->withBody($this->getContent($count, $this->perPage), 'raw')->post($this->url);
 
 
             $crawler = new Crawler($response->getBody()->getContents());
 
             $data = $this->parseList($crawler);
 
-            if(count($data) < 1){
+            if (count($data) < 1) {
                 break;
             }
 
@@ -63,24 +66,24 @@ class ReaperScans implements CrawlerInterface
         });
 
 
-        $details = array(
+        $details = [
             'title' => $crawler->filter('.post-title > h1')->text(),
             'description' => trim(rtrim(strip_tags($crawler->filter('.description-summary > div ')->html()))),
-            'cover' => explode(" ",$crawler->filter('.summary_image > a > img ')->attr('data-srcset'))[0],
-            'author' => $this->getData($info,'Author(s)'),
-            'artist' => $this->getData($info,'Artist(s)'),
-            'genre' => array_map('trim',explode(",",$this->getData($info,'Genre(s)'))),
+            'cover' => explode(" ", $crawler->filter('.summary_image > a > img ')->attr('data-srcset'))[0],
+            'author' => $this->getData($info, 'Author(s)'),
+            'artist' => $this->getData($info, 'Artist(s)'),
+            'genre' => array_map('trim', explode(",", $this->getData($info, 'Genre(s)'))),
             'status' => $crawler->filter('.post-status > div:nth-child(2) > div.summary-content')->text(),
-            'type' =>$this->getData($info,'Type'),
+            'type' => $this->getData($info, 'Type'),
             'release' => $crawler->filter('.post-status > div:nth-child(1) > div.summary-content')->text(),
-            'alternative' => $this->getData($info,'Alternative'),
-            'rating' => $this->getData($info,'Rating'),
+            'alternative' => $this->getData($info, 'Alternative'),
+            'rating' => $this->getData($info, 'Rating'),
             'chapters' => $this->getChapterinfo($crawler),
-        );
+        ];
 
         ModelCrawler::updateOrCreate([
             'title' => $details['title'],
-        ],[
+        ], [
             'worker' => 'ReaperScans',
             'url' => $url,
             'active' => true,
@@ -94,9 +97,9 @@ class ReaperScans implements CrawlerInterface
 
     public function getAllChapters()
     {
-        $chapters = array();
+        $chapters = [];
         foreach ($this->mangaDetails['chapters'] as $chapter) {
-            $chapters[] = new ProcessChapters($this,$chapter['url']);
+            $chapters[] = new ProcessChapters($this, $chapter['url']);
         }
 
         $bus = Bus::batch($chapters)->onQueue('chapters')->dispatch();
@@ -106,7 +109,8 @@ class ReaperScans implements CrawlerInterface
 
     public function getChapter($index)
     {
-        $chapter = $this->mangaDetails['chapters']->where('id',$index)->first();
+        $chapter = $this->mangaDetails['chapters']->where('id', $index)->first();
+
         return $this->getChapterByUrl($chapter['url']);
     }
 
@@ -118,6 +122,7 @@ class ReaperScans implements CrawlerInterface
             $images = $crawler->filter('.reading-content > div.page-break > img')->each(function (Crawler $node, $i) {
                 return trim($node->attr('data-src'));
             });
+
             return collect($images);
         } catch (\Throwable $th) {
             throw $th;
@@ -136,33 +141,35 @@ class ReaperScans implements CrawlerInterface
         ])->retry(3, 2000);
     }
 
-
     /**
      * Private Functions for Crawler
      */
-
-    private function getData($array, $key){
-        foreach($array as $data){
-            if(isset($data[$key])) return $data[$key];
+    private function getData($array, $key)
+    {
+        foreach ($array as $data) {
+            if (isset($data[$key])) {
+                return $data[$key];
+            }
         }
+
         return null;
     }
 
-    private function getChapterinfo($crawler){
+    private function getChapterinfo($crawler)
+    {
         $chapters = $crawler->filter('ul.main > li')->each(function (Crawler $node, $i) {
             return [
-                'id' => explode(" ",$node->filter('.chapter-link > a > p')->text())[1],
+                'id' => explode(" ", $node->filter('.chapter-link > a > p')->text())[1],
                 'name' => $node->filter('.chapter-link > a > p')->text(),
                 'url' => $node->filter('.chapter-link > a')->attr('href'),
                 'time' => Carbon::parse($node->filter('.chapter-link > a > span')->text())->format('Y-m-d H:i:s'),
             ];
         });
+
         return collect($chapters)->reverse();
     }
 
-
-
-    private function getContent($page,$perPage = 100)
+    private function getContent($page, $perPage = 100)
     {
         return "action=madara_load_more&page=$page&template=madara-core%2Fcontent%2Fcontent-archive&vars%5Borderby%5D=meta_value_num&vars%5Bpaged%5D=1&vars%5Btimerange%5D=&vars%5Bposts_per_page%5D=$perPage&vars%5Btax_query%5D%5Brelation%5D=OR&vars%5Bmeta_query%5D%5B0%5D%5B0%5D%5Bkey%5D=_wp_manga_chapter_type&vars%5Bmeta_query%5D%5B0%5D%5B0%5D%5Bvalue%5D=manga&vars%5Bmeta_query%5D%5B0%5D%5Brelation%5D=AND&vars%5Bmeta_query%5D%5Brelation%5D=OR&vars%5Bpost_type%5D=wp-manga&vars%5Bpost_status%5D=publish&vars%5Bmeta_key%5D=_latest_update&vars%5Border%5D=desc&vars%5Bsidebar%5D=full&vars%5Bmanga_archives_item_layout%5D=big_thumbnail";
     }
@@ -170,7 +177,7 @@ class ReaperScans implements CrawlerInterface
     private function getHeader(): array
     {
         return [
-            'content-type' => ' application/x-www-form-urlencoded; charset=UTF-8'
+            'content-type' => ' application/x-www-form-urlencoded; charset=UTF-8',
         ];
     }
 
@@ -192,6 +199,4 @@ class ReaperScans implements CrawlerInterface
 
         return $data;
     }
-
-
 }

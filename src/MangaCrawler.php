@@ -4,12 +4,9 @@ namespace RohitMIN\MangaCrawler;
 
 use RohitMIN\MangaCrawler\Crawlers\FanFox;
 use RohitMIN\MangaCrawler\Crawlers\ReaperScans;
-use RohitMIN\MangaCrawler\Facades\MangaList;
-use RohitMIN\MangaCrawler\CrawlObservers\ChapterObserver;
 
 class MangaCrawler
 {
-
     public $chapterListner;
 
     public function __construct()
@@ -20,6 +17,7 @@ class MangaCrawler
     public function addChapterListner($worker): self
     {
         $this->chapterListner = $worker;
+
         return $this;
     }
 
@@ -30,20 +28,20 @@ class MangaCrawler
      */
     public function getMangaList()
     {
-        $list = array(
+        $list = [
             // "FanFox" => array(
             //     'name' => 'FanFox',
             //     'url' => 'https://fanfox.net/',
             //     'icon' => 'https://fanfox.net/favicon.ico',
             //     'crawler' => 'RohitMIN\MangaCrawler\Crawlers\FanFox',
             // ),
-            "ReaperScans" => array(
+            "ReaperScans" => [
                 'name' => 'ReaperScans',
                 'url' => 'https://reaperscans.com/',
                 'icon' => 'https://reaperscans.com/favicon.ico',
                 'crawler' => ReaperScans::class,
-            ),
-        );
+            ],
+        ];
 
         return $list;
     }
@@ -55,9 +53,9 @@ class MangaCrawler
      */
     public function crawl($site)
     {
-        $list  = $this->getMangaList();
+        $list = $this->getMangaList();
 
-        $crawler = new $list[$site]['crawler'];
+        $crawler = new $list[$site]['crawler']();
 
         return $crawler($this);
     }
@@ -66,12 +64,10 @@ class MangaCrawler
      * Call ReaperScans
      * @param void
      */
-
     public function ReaperScans()
     {
         return new ReaperScans($this);
     }
-
 
     public function getchapterListner()
     {

@@ -9,27 +9,23 @@ use Illuminate\Support\Facades\Bus;
 
 interface CrawlerInterface
 {
-
     /**
      * Get the list of manga from the source.
      * @return Collection
      */
-
-    public function getMangaList() : Collection;
+    public function getMangaList(): Collection;
 
     /**
      * Get Manga Details from the source.
      * @param string $mangaUrl
      * @return self
      */
-
-    public function getManga(string $mangaUrl) : self;
+    public function getManga(string $mangaUrl): self;
 
     /**
      * Get All the chapters from the source and dispatch the job to process the chapters.
      * @return Bus
      */
-
     public function getAllChapters();
 
     /**
@@ -37,17 +33,12 @@ interface CrawlerInterface
      * @param int|float|string $index
      * @return Collection
      */
-
     public function getChapter(int|float|string $index);
-
 
     /**
      * Get Chapter By Url from the source.
      * @param string $chapterUrl
      * @return Collection
      */
-
-    public function getChapterByUrl(string $chapterUrl) : Collection;
-
-
+    public function getChapterByUrl(string $chapterUrl): Collection;
 }
