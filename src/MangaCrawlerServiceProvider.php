@@ -19,7 +19,7 @@ class MangaCrawlerServiceProvider extends PackageServiceProvider
             ->name('manga-crawler')
             ->hasConfigFile()
             // ->hasViews()
-            // ->hasMigration('create_manga-crawler_table')
+            ->hasMigration('create_manga_crawler_table')
             ->hasCommand(MangaCrawlerCommand::class);
     }
 }

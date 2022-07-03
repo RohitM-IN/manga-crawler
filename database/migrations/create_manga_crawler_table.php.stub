@@ -8,10 +8,13 @@ return new class extends Migration
 {
     public function up()
     {
-        Schema::create('manga_crawler_table', function (Blueprint $table) {
+        Schema::create('manga_crawler', function (Blueprint $table) {
             $table->id();
-
-            // add fields
+            $table->string('title');
+            $table->string('worker');
+            $table->string('url');
+            $table->boolean('active')->default(1)->nullable();
+            $table->longText('data')->nullable();
 
             $table->timestamps();
         });
