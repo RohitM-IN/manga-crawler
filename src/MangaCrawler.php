@@ -28,7 +28,6 @@ class MangaCrawler
      * @param void
      * @return array
      */
-
     public function getMangaList()
     {
         $list = array(
